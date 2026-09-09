@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عرض مسرحية عبارة فب العمارة | العد التنازلي</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #000;
+      color: #fff;
+      overflow: hidden;
+      transition: all 0.5s ease-in-out;
+    }
+    body.en { font-family: 'Roboto', sans-serif; }
+
+    .bg-pattern {
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/f6/Egyptian_hieroglyphs_background.png');
+      background-repeat: repeat;
+      background-size: contain;
+      opacity: 0.08;
+    }
+
+    .gold-border { border-color: #d4af37; }
+    .fade { opacity: 0; transition: opacity 1.5s ease-in-out; }
+
+    #main-content {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+    }
+    #main-content.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background-color: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 50;
+    }
+
+    #loading-image {
+      width: 60%;
+      max-width: 300px;
+      opacity: 1;
+      transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+    }
+
+    #loading-screen.dim {
+      background-color: rgba(0, 0, 0, 0.85);
+    }
+
+    footer {
+      position: fixed;
+      bottom: max(10px, env(safe-area-inset-bottom));
+      left: 0;
+      width: 100%;
+      padding: 0 70px 0 70px;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+      z-index: 110;
+      pointer-events: none;
+    }
+
+    /* 🎵 Floating Music Button */
+    #music-btn {
+      position: fixed;
+      bottom: 18px;
+      left: 18px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid #d4af37;
+      background: rgba(0, 0, 0, 0.75);
+      color: #d4af37;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    }
+    #music-btn:hover {
+      background: #d4af37;
+      color: #000;
+      transform: scale(1.1);
+    }
+    .pulse {
+      animation: pulseGlow 1.5s infinite;
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 6px rgba(212,175,55,0.4); }
+      50% { box-shadow: 0 0 16px rgba(212,175,55,0.9); }
+      100% { box-shadow: 0 0 6px rgba(212,175,55,0.4); }
+    }
+  </style>
+</head>
+
+<body class="relative min-h-screen flex flex-col items-center justify-center bg-black">
+  <!-- 🔸 Loading Screen -->
+  <div id="loading-screen">
+    <img id="loading-image"
+      src="https://www.dropbox.com/scl/fi/22q1ar70w9whbjy2por8z/facebook_1749992913977_7340002279068443502.jpg?rlkey=wyhspms1gbkc8q28va3k0syn3&st=hol6kvbz&raw=1"
+      alt="Intro Image">
+  </div>
+
+  <!-- Background -->
+  <div class="absolute inset-0 bg-pattern"></div>
+
+  <!-- 🔸 Language Toggle -->
+  <button id="langToggle"
+    class="absolute top-5 left-5 border border-yellow-500 text-yellow-500 px-3 py-1 rounded-md hover:bg-yellow-500 hover:text-black transition z-10">
+    En
+  </button>
+
+  <!-- 🔸 Logo -->
+  <div class="absolute top-5 right-5 flex items-center space-x-2 z-10">
+    <img src="https://www.dropbox.com/scl/fi/22q1ar70w9whbjy2por8z/facebook_1749992913977_7340002279068443502.jpg?rlkey=wyhspms1gbkc8q28va3k0syn3&st=hol6kvbz&raw=1"
+      alt="Logo" class="w-16 rounded-full" />
+  </div>
+
+  <!-- 🎵 Floating Music Player -->
+  <audio id="bg-music" loop>
+    <source src="https://www.dropbox.com/scl/fi/ed1l7axaq6y8ik93eexf7/SpotiDown.App-I-Wish-I-Said-I-Am-Sorry-Zade.mp3?rlkey=jgtgvqq7iny2pp84gtvy2tcz8&st=tf0780nw&raw=1" type="audio/mpeg">
+  </audio>
+  <div id="music-btn" title="تشغيل / إيقاف الموسيقى">▶️</div>
+
+  <!-- 🔸 Main Content -->
+  <div id="main-content" class="text-center space-y-8 z-10 px-4">
+    <h1 id="title" class="text-2xl md:text-3xl font-bold leading-relaxed">
+      رحلة جديدة مع فريق سينوغرافيا تبدأ بعد...
+    </h1>
+
+    <!-- Countdown -->
+    <div id="countdown" class="flex justify-center space-x-4 rtl:space-x-reverse text-yellow-400 text-xl md:text-2xl font-semibold">
+      <div class="text-center border gold-border border-yellow-400 rounded-full px-4 py-2">
+        <div id="days">00</div>
+        <div id="days-label" class="text-sm text-gray-400">يوم</div>
+      </div>
+      <div class="text-center border gold-border border-yellow-400 rounded-full px-4 py-2">
+        <div id="hours">00</div>
+        <div id="hours-label" class="text-sm text-gray-400">ساعة</div>
+      </div>
+      <div class="text-center border gold-border border-yellow-400 rounded-full px-4 py-2">
+        <div id="minutes">00</div>
+        <div id="minutes-label" class="text-sm text-gray-400">دقيقة</div>
+      </div>
+      <div class="text-center border gold-border border-yellow-400 rounded-full px-4 py-2">
+        <div id="seconds">00</div>
+        <div id="seconds-label" class="text-sm text-gray-400">ثانية</div>
+      </div>
+    </div>
+
+    <!-- Event Info -->
+    <div id="event-info" class="text-yellow-400 text-lg space-y-1">
+      <p>موعد العرض : يوم الأحد ٢٠ سبتمبر</p>
+      <p>الساعة السابعة مساءً</p>
+      <p>المكان: مسرح كلية سان مارك</p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex flex-col md:flex-row justify-center gap-4 mt-6">
+      <a id="bookBtn" href="https://ads202440.wixsite.com/eric-karim" target="_blank"
+        class="border border-yellow-500 text-yellow-500 px-6 py-2 rounded-full inline-block hover:bg-yellow-500 hover:text-black transition">
+        🎟️ اضغط هنا لحجز تذكرتك
+      </a>
+      <a id="visitBtn" href="https://scenography2025.blogspot.com/?m=1" target="_blank"
+        class="border border-gray-400 text-gray-300 px-6 py-2 rounded-full inline-block hover:bg-gray-700 hover:text-white transition">
+        🌐 زر موقعنا الإلكتروني
+      </a>
+    </div>
+  </div>
+  <!-- Footer -->
+  <footer>
+    <p>Made with ❤️ by <span class="text-yellow-400 font-semibold">Eric Production</span></p>
+  </footer>
+  <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black"></div>
+
+  <script>
+    // 🔹 Loading intro (2 images)
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingImage = document.getElementById('loading-image');
+    const mainContent = document.getElementById('main-content');
+    const images = [
+      "https://www.dropbox.com/scl/fi/22q1ar70w9whbjy2por8z/facebook_1749992913977_7340002279068443502.jpg?rlkey=wyhspms1gbkc8q28va3k0syn3&raw=1",
+      "https://www.dropbox.com/scl/fi/owv3nvnwllvnmouy0sbof/IMG-20260905-WA0011.jpg?rlkey=2qw8zjgmmxf0xrm0xd0x8csyp&st=jotlymlx&raw=1"
+    ];
+    let current = 0;
+    function nextIntroImage() {
+      loadingScreen.classList.add('dim');
+      loadingImage.style.opacity = 0;
+      setTimeout(() => {
+        current++;
+        if (current < images.length) {
+          loadingImage.src = images[current];
+          loadingImage.style.opacity = 1;
+          setTimeout(nextIntroImage, 2000);
+        } else {
+          setTimeout(() => {
+            loadingScreen.classList.add('fade');
+            setTimeout(() => {
+              loadingScreen.style.display = 'none';
+              mainContent.classList.add('show');
+            }, 1000);
+          }, 1500);
+        }
+      }, 1000);
+    }
+    setTimeout(nextIntroImage, 2000);
+
+    // 🔹 Countdown Timer (7:15 PM Egypt Time)
+    const targetDate = new Date("2026-09-20T19:15:00+02:00").getTime();
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+      if (distance < 0) {
+        document.getElementById("countdown").innerHTML =
+          "<span class='text-yellow-400 text-2xl font-bold'>لقد بدأ العرض!</span>";
+        return;
+      }
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      document.getElementById("days").textContent = days;
+      document.getElementById("hours").textContent = hours;
+      document.getElementById("minutes").textContent = minutes;
+      document.getElementById("seconds").textContent = seconds;
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // 🔹 Language Toggle
+    const toggle = document.getElementById("langToggle");
+    let isArabic = true;
+    toggle.addEventListener("click", () => {
+      const body = document.body;
+      isArabic = !isArabic;
+      if (isArabic) {
+        body.lang = "ar";
+        body.dir = "rtl";
+        body.classList.remove("en");
+        toggle.textContent = "En";
+        document.getElementById("title").textContent = "رحلة جديدة مع فريق سينوغرافيا تبدأ بعد...";
+        document.getElementById("days-label").textContent = "يوم";
+        document.getElementById("hours-label").textContent = "ساعة";
+        document.getElementById("minutes-label").textContent = "دقيقة";
+        document.getElementById("seconds-label").textContent = "ثانية";
+        document.getElementById("event-info").innerHTML =
+          "<p>موعد العرض : يوم الأحد ٢٠ سبتمبر</p><p>الساعة : السابعة مساءً</p><p>المكان : مسرح كلية سان مارك</p>";
+        document.getElementById("bookBtn").innerHTML = "🎟️ اضغط هنا لحجز تذكرتك";
+        document.getElementById("visitBtn").innerHTML = "🌐 زر موقعنا الإلكتروني";
+      } else {
+        body.lang = "en";
+        body.dir = "ltr";
+        body.classList.add("en");
+        toggle.textContent = "ع";
+        document.getElementById("title").textContent = "A New Journey with the Scenography Team Begins In...";
+        document.getElementById("days-label").textContent = "Days";
+        document.getElementById("hours-label").textContent = "Hours";
+        document.getElementById("minutes-label").textContent = "Minutes";
+        document.getElementById("seconds-label").textContent = "Seconds";
+        document.getElementById("event-info").innerHTML =
+          "<p>Show Date: Sunday 20 September 2026 </p><p>Time: 7:00 PM</p><p>Location: Saint Mark’s College Theater</p>";
+        document.getElementById("bookBtn").innerHTML = "🎟️ Book Your Ticket Now";
+        document.getElementById("visitBtn").innerHTML = "🌐 Click to Visit Our Website";
+      }
+    });
+
+    // 🎵 Music System
+    const bgMusic = document.getElementById('bg-music');
+    const btn = document.getElementById('music-btn');
+    let playing = false;
+
+    const handleAutoplay = async () => {
+      try {
+        await bgMusic.play();
+        playing = true;
+        btn.textContent = '⏸️';
+        btn.classList.add('pulse');
+      } catch (error) {
+        console.log('Autoplay blocked:', error);
+        btn.textContent = '▶️';
+        btn.classList.remove('pulse');
+      }
+    };
+
+    const userInteraction = () => {
+      if (!playing) handleAutoplay();
+      document.removeEventListener('click', userInteraction);
+    };
+
+    document.addEventListener('click', userInteraction);
+
+    window.addEventListener('load', () => {
+      bgMusic.volume = 0.7;
+      bgMusic.muted = false;
+      handleAutoplay();
+    });
+
+    btn.addEventListener('click', () => {
+      if (playing) {
+        bgMusic.pause();
+        btn.textContent = '▶️';
+        btn.classList.remove('pulse');
+      } else {
+        bgMusic.play();
+        bgMusic.muted = false;
+        btn.textContent = '⏸️';
+        btn.classList.add('pulse');
+      }
+      playing = !playing;
+    });
+
+    window.addEventListener('beforeunload', () => {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+    });
+  </script>
+</body>
+</html>
